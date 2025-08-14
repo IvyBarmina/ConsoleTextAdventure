@@ -136,6 +136,7 @@
   <ItemGroup>
     <ClInclude Include="game.hpp" />
     <ClInclude Include="parser.hpp" />
+    <ClInclude Include="saves.hpp" />
     <ClInclude Include="scene.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

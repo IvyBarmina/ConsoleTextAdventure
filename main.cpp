@@ -6,6 +6,7 @@
 #include "parser.hpp"
 #include "game.hpp"
 #include "fsutill.hpp"
+#include "saves.hpp"
 
 int main()
 {
@@ -46,10 +47,30 @@ int main()
             runGameLoop(state, parsed.graph, io, renderer);
         }
         else if (choice == "2") {
-            // TODO: Autosave
-            io.writeln("Fake autosave.");
-            io.writeln("Press Enter...");
-            io.readLine();
+            auto loaded = loadAuto();
+            if (!loaded) {
+                io.writeln("Can't find autosave.");
+                io.writeln("Press Enter...");
+                io.readLine();
+                continue;
+            }
+
+            auto parsed = parseAdventure(loaded->adventurePath);
+            if (!parsed.ok) {
+                io.writeln("Fail to load adventure from save:");
+                io.writeln(parsed.error);
+                io.writeln("Press enter...");
+                io.readLine();
+                continue;
+            }
+
+            GameState state;
+            state.playerName = loaded->playerName;
+            state.currentSceneId = loaded->currentSceneId;
+            state.adventureTitle = parsed.graph.title;
+            state.adventurePath = loaded->adventurePath;
+
+            runGameLoop(state, parsed.graph, io, renderer);
         }
         else if (choice == "3") {
             auto list = listAdventures("adventures");

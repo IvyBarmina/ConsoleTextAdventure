@@ -4,6 +4,7 @@
 #include "scene.hpp"
 #include "io.hpp"
 #include "renderer.hpp"
+#include "saves.hpp"
 
 inline void runGameLoop(GameState& state, const SceneGraph& graph, IInput& in, TextRenderer& renderer)
 {
@@ -34,6 +35,8 @@ inline void runGameLoop(GameState& state, const SceneGraph& graph, IInput& in, T
                 [&](const Option& o) { return o.number == n; });
             if (it != scene->options.end()) {
                 state.currentSceneId = it->targetSceneId;
+                SaveData sd{ state.adventurePath, state.playerName, state.currentSceneId };
+                (void)saveAuto(sd);
                 continue;
             }
             renderer.message("Can't find variant with number " + std::to_string(n));
