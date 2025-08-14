@@ -13,6 +13,11 @@ struct TextRenderer {
         out.writeln("\n=== " + title + " ===  [Player: " + player + "]\n");
     }
 
+    void renderSeparator()
+    {
+        out.writeln("\n--------------------------------------------------");
+    }
+
     void renderScene(const Scene& s)
     {
         for (const auto& line : s.textLines) out.writeln(line);

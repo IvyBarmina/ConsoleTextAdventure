@@ -41,6 +41,18 @@ inline std::optional<std::string> tryMatchPrefix(const std::string& line, const 
     return std::nullopt;
 }
 
+inline std::string makeParseError(int lineNo, const std::string& msg, const std::string& line)
+{
+    // cut long lines
+    std::string snippet = line;
+    const size_t MAXLEN = 120;
+    if (snippet.size() > MAXLEN) snippet = snippet.substr(0, MAXLEN) + "...";
+    std::ostringstream oss;
+    oss << "Line " << lineNo << ": " << msg << "\n"
+        << "  > " << snippet;
+    return oss.str();
+}
+
 inline ParseResult parseAdventure(const std::string& path)
 {
     std::ifstream in(path);
@@ -64,11 +76,11 @@ inline ParseResult parseAdventure(const std::string& path)
         }
         if (s.rfind("[scene:", 0) == 0) {
             auto pos = s.find(']');
-            if (pos == std::string::npos) return { false, {}, "Line " + std::to_string(lineNo) + ": no ']' in scene" };
+            if (pos == std::string::npos) return { false, {}, makeParseError(lineNo, ": no ']' in scene", s) };
             std::string id = trim(s.substr(7, pos - 7)); // after [scene:
             if (!id.empty() && id.front() == ':') id.erase(0, 1);
             id = trim(id);
-            if (id.empty()) return { false, {}, "Line " + std::to_string(lineNo) + ": empty scene id" };
+            if (id.empty()) return { false, {}, makeParseError(lineNo, ": empty scene id", s) };
 
             Scene sc;
             sc.id = id;
@@ -78,7 +90,7 @@ inline ParseResult parseAdventure(const std::string& path)
             if (!haveFirst) { graph.firstSceneId = current->id; haveFirst = true; }
             continue;
         }
-        if (!current) return { false, {}, "Line " + std::to_string(lineNo) + ": content outside of scene" };
+        if (!current) return { false, {}, makeParseError(lineNo, ": content outside of scene", s) };
 
         if (auto t = tryMatchPrefix(s, ">")) {
             current->textLines.push_back(trim(*t));
@@ -88,24 +100,24 @@ inline ParseResult parseAdventure(const std::string& path)
             // expect format: -(space)(<n>) Text -> target
             // example: - (1) Move forward -> hall
             std::string rest = trim(*t);
-            if (rest.size() < 3 || rest[0] != '(') return { false, {}, "Line " + std::to_string(lineNo) + ": await '(n)'" };
+            if (rest.size() < 3 || rest[0] != '(') return { false, {}, makeParseError(lineNo, ": await '(n)'", s) };
             auto rb = rest.find(')');
-            if (rb == std::string::npos) return { false, {}, "Line " + std::to_string(lineNo) + ": no ')' in number" };
+            if (rb == std::string::npos) return { false, {}, makeParseError(lineNo, ": no ')' in number", s) };
             std::string numStr = rest.substr(1, rb - 1);
             int number = std::stoi(trim(numStr));
             std::string afterNum = trim(rest.substr(rb + 1)); // "Text -> target"
             auto arrow = afterNum.rfind("->");
-            if (arrow == std::string::npos) return { false, {}, "Line " + std::to_string(lineNo) + ": no '-> target'" };
+            if (arrow == std::string::npos) return { false, {}, makeParseError(lineNo, ": no '-> target'", s) };
             std::string label = trim(afterNum.substr(0, arrow));
             std::string target = trim(afterNum.substr(arrow + 2));
-            if (label.empty() || target.empty()) return { false, {}, "Line " + std::to_string(lineNo) + ": empty label/target" };
+            if (label.empty() || target.empty()) return { false, {}, makeParseError(lineNo, ": empty label/target", s) };
 
             // add option
             current->options.push_back(Option{ number, label, target });
             continue;
         }
         // loggin undefined formatting
-        return { false, {}, "Line " + std::to_string(lineNo) + ": undefined construction" };
+        return { false, {}, makeParseError(lineNo, ": undefined construction", s) };
     }
 
     // fast links validation

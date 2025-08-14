@@ -24,6 +24,9 @@
     <ClCompile Include="io.hpp">
       <Filter>Header Files</Filter>
     </ClCompile>
+    <ClCompile Include="fsutill.hpp">
+      <Filter>Header Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="scene.hpp">

@@ -29,5 +29,6 @@ struct GameState
 	std::string playerName = "Player";
 	std::string currentSceneId;
 	std::string adventureTitle;
+	std::string adventurePath;
 };
 
